@@ -3,3 +3,4 @@ vectordb/
 __pycache__/
 .env
 *.pyc
+.vscode
