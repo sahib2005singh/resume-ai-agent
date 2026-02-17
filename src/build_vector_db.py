@@ -9,7 +9,8 @@ df = pd.read_csv("/Users/sahibjotsingh/resume_ai_agent/data/job_dataset.csv")
 documents = []
 for _, row in df.iterrows():
     text = str(row["Responsibilities"])
-    documents.append(Document(page_content=text))
+    metadata = {"title": row["Title"],"skills": row["Skills"]}
+    documents.append(Document(page_content=text,metadata=metadata))
 
 splitter = RecursiveCharacterTextSplitter(
     chunk_size = 500,
