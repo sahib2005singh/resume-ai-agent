@@ -3,6 +3,8 @@ import axios from 'axios'
 import { Sparkles, AlertCircle, Loader2 } from 'lucide-react'
 import AnalysisResult from '../components/AnalysisResult'
 
+const API_BASE = import.meta.env.VITE_API_URL
+
 export default function SkillGap({ resumeFile, role }) {
   const [loading,  setLoading]  = useState(false)
   const [result,   setResult]   = useState(null)
@@ -20,7 +22,7 @@ export default function SkillGap({ resumeFile, role }) {
       fd.append('resume', resumeFile)
       fd.append('role', role.trim())
 
-      const { data } = await axios.post('/api/analyze', fd, {
+      const { data } = await axios.post(`${API_BASE}/api/analyze`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setResult(data.analysis)
@@ -33,7 +35,6 @@ export default function SkillGap({ resumeFile, role }) {
 
   return (
     <div className="space-y-8">
-      {/* Description */}
       <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6">
         <h2 className="font-semibold text-lg mb-1">Skill Gap Analysis</h2>
         <p className="text-slate-400 text-sm">
@@ -64,7 +65,6 @@ export default function SkillGap({ resumeFile, role }) {
         </button>
       </div>
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="rounded-2xl bg-slate-900 border border-slate-800 p-8 space-y-4 animate-pulse">
           <div className="h-4 bg-slate-800 rounded w-1/3" />
@@ -76,7 +76,6 @@ export default function SkillGap({ resumeFile, role }) {
         </div>
       )}
 
-      {/* Results */}
       {result && !loading && (
         <div className="rounded-2xl bg-slate-900 border border-slate-800 p-8">
           <div className="flex items-center gap-2 mb-6">

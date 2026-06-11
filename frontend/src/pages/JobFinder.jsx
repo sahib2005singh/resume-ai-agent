@@ -4,6 +4,8 @@ import { Search, AlertCircle, Loader2, BriefcaseBusiness, MapPin } from 'lucide-
 import JobCard from '../components/JobCard'
 import AnalysisResult from '../components/AnalysisResult'
 
+const API_BASE = import.meta.env.VITE_API_URL
+
 const EMPLOYMENT_TYPES = [
   { label: 'Full-Time',   value: 'FULLTIME'   },
   { label: 'Internship',  value: 'INTERN'     },
@@ -45,7 +47,7 @@ export default function JobFinder({ resumeFile, role }) {
       fd.append('location', location.trim())
       fd.append('experience_range', isIntern ? '' : expRange)
 
-      const { data } = await axios.post('/api/jobs', fd, {
+      const { data } = await axios.post(`${API_BASE}/api/jobs`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setSummary(data.summary)
