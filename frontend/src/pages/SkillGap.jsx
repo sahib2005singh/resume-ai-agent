@@ -3,7 +3,7 @@ import axios from 'axios'
 import { Sparkles, AlertCircle, Loader2 } from 'lucide-react'
 import AnalysisResult from '../components/AnalysisResult'
 
-const API_BASE = import.meta.env.VITE_API_URL
+const API_BASE = 'https://resume-ai-agent-amb6.onrender.com'
 
 export default function SkillGap({ resumeFile, role }) {
   const [loading,  setLoading]  = useState(false)

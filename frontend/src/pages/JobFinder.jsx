@@ -4,7 +4,7 @@ import { Search, AlertCircle, Loader2, BriefcaseBusiness, MapPin } from 'lucide-
 import JobCard from '../components/JobCard'
 import AnalysisResult from '../components/AnalysisResult'
 
-const API_BASE = import.meta.env.VITE_API_URL
+const API_BASE = 'https://resume-ai-agent-amb6.onrender.com'
 
 const EMPLOYMENT_TYPES = [
   { label: 'Full-Time',   value: 'FULLTIME'   },
