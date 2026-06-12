@@ -2,22 +2,110 @@ import ReactMarkdown from 'react-markdown'
 
 export default function AnalysisResult({ content }) {
   return (
-    <div className="prose prose-invert prose-sm max-w-none
-                    prose-headings:text-slate-100 prose-headings:font-bold
-                    prose-h3:text-xl prose-h4:text-base
-                    prose-p:text-slate-300 prose-p:leading-relaxed
-                    prose-li:text-slate-300
-                    prose-strong:text-slate-100
-                    prose-table:text-sm
-                    prose-th:text-slate-200 prose-th:bg-slate-800 prose-th:px-3 prose-th:py-2
-                    prose-td:text-slate-300 prose-td:px-3 prose-td:py-2
-                    prose-hr:border-slate-700
-                    [&_table]:w-full [&_table]:border-collapse
-                    [&_table]:rounded-xl [&_table]:overflow-hidden
-                    [&_th]:border [&_th]:border-slate-700
-                    [&_td]:border [&_td]:border-slate-800
-                    [&_tr:nth-child(even)_td]:bg-slate-800/50">
-      <ReactMarkdown>{content}</ReactMarkdown>
+    <div className="font-body text-body leading-relaxed space-y-4"
+      style={{
+        '--tw-prose-body': '#cccccc',
+        fontSize: 15,
+        letterSpacing: 0,
+      }}
+    >
+      <style>{`
+        .analysis-content h3 {
+          font-family: var(--font-display);
+          font-size: 20px;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: #ffffff;
+          font-weight: 400;
+          margin-top: 32px;
+          margin-bottom: 12px;
+        }
+        .analysis-content h4 {
+          font-family: var(--font-display);
+          font-size: 14px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: #999999;
+          font-weight: 400;
+          margin-top: 24px;
+          margin-bottom: 8px;
+        }
+        .analysis-content p {
+          color: #cccccc;
+          font-family: var(--font-body);
+          font-size: 15px;
+          line-height: 1.7;
+          margin-bottom: 12px;
+          letter-spacing: 0;
+        }
+        .analysis-content strong {
+          color: #ffffff;
+          font-weight: 400;
+        }
+        .analysis-content ul, .analysis-content ol {
+          margin: 12px 0;
+          padding-left: 0;
+          list-style: none;
+        }
+        .analysis-content li {
+          color: #cccccc;
+          font-size: 15px;
+          padding: 6px 0;
+          border-bottom: 1px solid #141414;
+          padding-left: 16px;
+          position: relative;
+        }
+        .analysis-content li::before {
+          content: '→';
+          position: absolute;
+          left: 0;
+          color: #c3d9f3;
+          font-family: var(--font-mono);
+          font-size: 12px;
+        }
+        .analysis-content table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 24px 0;
+          font-size: 13px;
+        }
+        .analysis-content th {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: #999999;
+          text-align: left;
+          padding: 12px 16px;
+          border-bottom: 1px solid #262626;
+          font-weight: 400;
+        }
+        .analysis-content td {
+          color: #cccccc;
+          font-family: var(--font-body);
+          padding: 12px 16px;
+          border-bottom: 1px solid #141414;
+          font-size: 14px;
+        }
+        .analysis-content tr:hover td {
+          background: #0d0d0d;
+        }
+        .analysis-content hr {
+          border: none;
+          border-top: 1px solid #262626;
+          margin: 32px 0;
+        }
+        .analysis-content code {
+          font-family: var(--font-mono);
+          font-size: 12px;
+          color: #c3d9f3;
+          background: #141414;
+          padding: 2px 8px;
+        }
+      `}</style>
+      <div className="analysis-content">
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
     </div>
   )
 }

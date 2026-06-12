@@ -1,43 +1,63 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { Search, AlertCircle, Loader2, BriefcaseBusiness, MapPin } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import JobCard from '../components/JobCard'
 import AnalysisResult from '../components/AnalysisResult'
 
 const API_BASE = 'https://resume-ai-agent-amb6.onrender.com'
 
 const EMPLOYMENT_TYPES = [
-  { label: 'Full-Time',   value: 'FULLTIME'   },
-  { label: 'Internship',  value: 'INTERN'     },
-  { label: 'Part-Time',   value: 'PARTTIME'   },
-  { label: 'Contract',    value: 'CONTRACTOR' },
+  { label: 'Full-Time',  value: 'FULLTIME'   },
+  { label: 'Internship', value: 'INTERN'     },
+  { label: 'Part-Time',  value: 'PARTTIME'   },
+  { label: 'Contract',   value: 'CONTRACTOR' },
 ]
 
 const EXPERIENCE_RANGES = [
-  { label: '0 – 2 years',  value: '0-2' },
-  { label: '2 – 5 years',  value: '2-5' },
-  { label: '5 – 10 years', value: '5-10' },
-  { label: '10+ years',    value: '10+' },
+  { label: '0 – 2 yrs',  value: '0-2'  },
+  { label: '2 – 5 yrs',  value: '2-5'  },
+  { label: '5 – 10 yrs', value: '5-10' },
+  { label: '10+',        value: '10+'  },
 ]
 
+function FilterButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className="font-mono text-xs uppercase transition-colors"
+      style={{
+        letterSpacing: '2px',
+        padding: '8px 16px',
+        border: `1px solid ${active ? '#ffffff' : '#262626'}`,
+        borderRadius: 0,
+        background: active ? '#ffffff' : 'transparent',
+        color: active ? '#000000' : '#666666',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function JobFinder({ resumeFile, role }) {
-  const [empType,    setEmpType]    = useState('FULLTIME')
-  const [location,   setLocation]   = useState('')
-  const [expRange,   setExpRange]   = useState('')
-  const [loading,    setLoading]    = useState(false)
-  const [summary,    setSummary]    = useState(null)
-  const [jobs,       setJobs]       = useState([])
-  const [error,      setError]      = useState(null)
+  const [empType,  setEmpType]  = useState('FULLTIME')
+  const [location, setLocation] = useState('')
+  const [expRange, setExpRange] = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [summary,  setSummary]  = useState(null)
+  const [jobs,     setJobs]     = useState([])
+  const [error,    setError]    = useState(null)
+  const [page,     setPage]     = useState(1)
 
   const isIntern = empType === 'INTERN'
 
-  async function handleSearch() {
-    if (!resumeFile) return setError('Please upload your resume first.')
-    if (!role.trim()) return setError('Please enter a target job role.')
+  async function fetchJobs(pageNum = 1) {
+    if (!resumeFile) return setError('Upload your resume first.')
+    if (!role.trim()) return setError('Enter a target role.')
     setError(null)
-    setSummary(null)
-    setJobs([])
     setLoading(true)
+    if (pageNum === 1) { setSummary(null); setJobs([]) }
 
     try {
       const fd = new FormData()
@@ -46,12 +66,14 @@ export default function JobFinder({ resumeFile, role }) {
       fd.append('employment_type', empType)
       fd.append('location', location.trim())
       fd.append('experience_range', isIntern ? '' : expRange)
+      fd.append('page', String(pageNum))
 
       const { data } = await axios.post(`${API_BASE}/api/jobs`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setSummary(data.summary)
       setJobs(data.jobs || [])
+      setPage(pageNum)
     } catch (err) {
       setError(err.response?.data?.detail || err.message || 'Something went wrong.')
     } finally {
@@ -60,163 +82,124 @@ export default function JobFinder({ resumeFile, role }) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-16">
 
-      {/* ── Filter panel ──────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-5">
-        <div>
-          <h2 className="font-semibold text-lg mb-0.5">Job Finder</h2>
-          <p className="text-slate-400 text-sm">
-            Find companies hiring for your role right now with direct apply links.
-          </p>
+      {/* ── Filters ───────────────────────────────────────────── */}
+      <div className="space-y-8">
+        <p className="font-body text-body leading-relaxed" style={{ fontSize: 15, maxWidth: 540, letterSpacing: 0 }}>
+          Find companies hiring for your target role right now — filtered by job type,
+          experience level, and location. Each result includes a direct apply link.
+        </p>
+
+        {/* Job type */}
+        <div className="space-y-3">
+          <label className="caption-label">Job Type</label>
+          <div className="flex flex-wrap gap-2">
+            {EMPLOYMENT_TYPES.map(t => (
+              <FilterButton key={t.value} active={empType === t.value}
+                onClick={() => { setEmpType(t.value); setExpRange('') }}>
+                {t.label}
+              </FilterButton>
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-          {/* Employment type */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <BriefcaseBusiness size={12} /> Job Type
-            </label>
+        {/* Experience */}
+        {!isIntern && (
+          <div className="space-y-3">
+            <label className="caption-label">Experience</label>
             <div className="flex flex-wrap gap-2">
-              {EMPLOYMENT_TYPES.map(t => (
-                <button
-                  key={t.value}
-                  onClick={() => { setEmpType(t.value); setExpRange('') }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition
-                    ${empType === t.value
-                      ? 'bg-brand-600 border-brand-500 text-white'
-                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'}`}
-                >
-                  {t.label}
-                </button>
+              {EXPERIENCE_RANGES.map(r => (
+                <FilterButton key={r.value} active={expRange === r.value}
+                  onClick={() => setExpRange(expRange === r.value ? '' : r.value)}>
+                  {r.label}
+                </FilterButton>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Experience — hidden for intern */}
-          {!isIntern && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Experience
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {EXPERIENCE_RANGES.map(r => (
-                  <button
-                    key={r.value}
-                    onClick={() => setExpRange(expRange === r.value ? '' : r.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition
-                      ${expRange === r.value
-                        ? 'bg-brand-600 border-brand-500 text-white'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'}`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Location */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin size={12} /> Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. San Francisco, Remote, India"
-              className="h-10 px-3 rounded-xl bg-slate-800 border border-slate-700
-                         text-sm text-slate-100 placeholder-slate-500
-                         focus:outline-none focus:ring-2 focus:ring-brand-500
-                         transition"
-            />
-          </div>
+        {/* Location */}
+        <div className="space-y-3" style={{ maxWidth: 320 }}>
+          <label className="caption-label">Location</label>
+          <input
+            type="text"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            placeholder="San Francisco, Remote, India…"
+            className="input-bugatti"
+          />
         </div>
 
-        {/* Intern note */}
         {isIntern && (
-          <p className="text-xs text-purple-400 bg-purple-950/30 border border-purple-800
-                         rounded-xl px-4 py-2.5">
-            Internship search — no experience filter applied.
+          <p className="caption-label" style={{ color: '#c3d9f3' }}>
+            Internship — experience filter not applied
           </p>
         )}
 
         {error && (
-          <div className="flex items-start gap-2 rounded-xl bg-red-950/40
-                          border border-red-800 px-4 py-3 text-sm text-red-300">
-            <AlertCircle size={15} className="mt-0.5 shrink-0" />
-            {error}
-          </div>
+          <p className="font-mono text-xs uppercase tracking-caption" style={{ color: '#d4a017' }}>
+            ↳ {error}
+          </p>
         )}
 
-        <button
-          onClick={handleSearch}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl
-                     bg-brand-600 hover:bg-brand-500 disabled:opacity-50
-                     disabled:cursor-not-allowed text-white font-semibold text-sm
-                     transition-colors duration-150"
-        >
+        <button onClick={() => fetchJobs(1)} disabled={loading} className="btn-primary">
           {loading
-            ? <><Loader2 size={15} className="animate-spin" /> Searching…</>
-            : <><Search size={15} /> Find Jobs</>
+            ? <><Loader2 size={13} className="animate-spin" /> Searching</>
+            : 'Find Openings'
           }
         </button>
       </div>
 
-      {/* ── Loading skeleton ──────────────────────────────────────── */}
+      {/* ── Loading skeleton ──────────────────────────────────── */}
       {loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="rounded-2xl bg-slate-900 border border-slate-800 p-5 animate-pulse space-y-3">
-              <div className="flex gap-3">
-                <div className="w-12 h-12 rounded-xl bg-slate-800" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-slate-800 rounded w-3/4" />
-                  <div className="h-3 bg-slate-800 rounded w-1/2" />
-                </div>
-              </div>
-              <div className="h-3 bg-slate-800 rounded w-full" />
-              <div className="h-3 bg-slate-800 rounded w-5/6" />
-              <div className="h-10 bg-slate-800 rounded-xl mt-2" />
-            </div>
+        <div className="space-y-3">
+          <div className="caption-label" style={{ color: '#444' }}>Scanning live job boards…</div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} style={{ height: 1, background: '#141414', width: `${[90, 70, 80, 60][i]}%` }} />
           ))}
         </div>
       )}
 
-      {/* ── Results ───────────────────────────────────────────────── */}
+      {/* ── Results ───────────────────────────────────────────── */}
       {!loading && jobs.length > 0 && (
-        <>
+        <div className="space-y-12">
+
           {/* AI summary */}
           {summary && (
-            <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6">
-              <h3 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
-                <Search size={15} className="text-brand-400" />
-                AI Match Summary
-              </h3>
+            <div className="space-y-6">
+              <div className="hairline-bottom pb-4">
+                <p className="caption-label" style={{ color: '#c3d9f3' }}>AI Match Summary</p>
+              </div>
               <AnalysisResult content={summary} />
             </div>
           )}
 
-          {/* Job cards */}
-          <div>
-            <h3 className="font-semibold text-slate-100 mb-4">
-              {jobs.length} Live Openings for "{role}"
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {jobs.map((job, i) => <JobCard key={i} job={job} />)}
+          {/* Jobs header + refresh */}
+          <div className="flex items-center justify-between hairline-bottom pb-4">
+            <div>
+              <p className="caption-label" style={{ color: '#c3d9f3' }}>Live Openings</p>
+              <h2 className="font-display text-ink uppercase mt-1"
+                style={{ fontSize: 20, letterSpacing: '1.5px' }}>
+                {jobs.length} Results · Page {page}
+              </h2>
             </div>
+            <button onClick={() => fetchJobs(page + 1)} disabled={loading} className="btn-ghost">
+              <RefreshCw size={12} /> Load More
+            </button>
           </div>
-        </>
+
+          {/* Cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px" style={{ background: '#141414' }}>
+            {jobs.map((job, i) => <JobCard key={i} job={job} />)}
+          </div>
+        </div>
       )}
 
-      {/* Empty state */}
       {!loading && jobs.length === 0 && summary && (
-        <div className="rounded-2xl bg-slate-900 border border-slate-800 p-10 text-center text-slate-500">
+        <p className="caption-label" style={{ color: '#444444' }}>
           No openings found. Try a different role or location.
-        </div>
+        </p>
       )}
     </div>
   )
