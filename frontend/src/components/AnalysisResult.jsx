@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function AnalysisResult({ content }) {
   return (
@@ -104,7 +105,7 @@ export default function AnalysisResult({ content }) {
         }
       `}</style>
       <div className="analysis-content">
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       </div>
     </div>
   )
